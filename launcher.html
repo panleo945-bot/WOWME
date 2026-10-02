@@ -17,7 +17,6 @@
             <button class="btn-normal" onclick="launchDirect()">Launch through this page</button>
         </div>
     </div>
-
     <script>
         const predefinedHTML = `<!DOCTYPE html>
 <html lang="en">
@@ -32,27 +31,30 @@
 	flex-direction: column;
 	align-items: center;
 	gap: 16px;
+  background-color: black;
 	background: linear-gradient(180deg, #0a2a6b 0%, #02123b 100%) fixed;
 }
 button {
     background-color: #061022;
     color: cyan;
-    height: 35px;
-    width: 85px;
-    font-size: 12px;
-    border-color: cyan;
-
+    height: 45px;
+    width: 45px;
+    font-size: 9px;
+    border-style: none;
+    border-radius: 70%;
+    cursor: pointer;
 }
 
 .control-panel {
     position: absolute;
     top: 4%;
-	width: 190px;
+	width: 360px;
 	height: 50px;
 	display: flex;
 	justify-content: space-evenly;
 	align-items: center;
 	background-color: rgb(10, 119, 228);
+    
 }
 
 .iframe-container {
@@ -74,7 +76,7 @@ button {
 	top: 0;
 	left: 0;
 	z-index: 1;
-	width: calc(100% - 30px);
+	width: calc(100% - 60px);
 	height: 32px;
 	box-sizing: border-box;
 	display: flex;
@@ -89,6 +91,8 @@ button {
 	text-align: left;
 	cursor: grab;
 	touch-action: none;
+    border-style: none !important;
+    border-radius: 0% !important; 
 }
 
 .iframe-drag-handle::before {
@@ -103,11 +107,27 @@ button {
 	cursor: grabbing;
 }
 
+.iframe-maximize {
+	position: absolute;
+	top: 4px;
+	right: 30px;
+	z-index: 3;
+	width: 22px;
+	height: 22px;
+	padding: 0;
+	border: 0;
+	border-radius: 50%;
+	background: #050396;
+	color: rgb(255, 4, 4);
+	font-size: 18px;
+	line-height: 1;
+	cursor: pointer;
+}
 .iframe-close {
 	position: absolute;
 	top: 4px;
 	right: 4px;
-	z-index: 2;
+	z-index: 4;
 	width: 22px;
 	height: 22px;
 	padding: 0;
@@ -146,13 +166,17 @@ button {
 </head>
 <body>
     <div class="control-panel">
-        <button id="forward">Use proxy</button>
-        <button id="static">Games / Static</button>
+        <button id="forward">Use Website</button>
+        
+        <button id="static">Use Static</button>
+        <button id="about" style="font-size: 30px;">𝒾</button>
     </div>
 <script>
 
 let forwardingwebsite = "https://example.com/"
-let staticsite = \`<head><style>body {background-color: white}</style></head><body><h1>Add static site</h1> <script>let jsison = document.createElement("h2"); jsison.textContent = "JS is on"; document.body.append(jsison)<\\/script></body> \`
+let staticsite = "<body style='background-color: white'><h1>Add static site</h1><script>let jsison = document.createElement('h2'); jsison.textContent = 'JS is on'; document.body.append(jsison)<\\/script></body>"
+let infoHtml = "<head></head><body style='background-color: white;'><h1>Info</h1><h2>WOWME version: pre-alpha 0.1</h2></body>"
+
 let nextIframeZIndex = 1
 //Make sure website allows embeds
 function forwardPopUp(code) {
@@ -164,7 +188,9 @@ function forwardPopUp(code) {
     newiframe.src = forwardingwebsite
 } else if (code == 0) {
     newiframe.srcdoc = staticsite
-}
+} else if (code == 2) {
+  newiframe.srcdoc = infoHtml
+  }
     newiframe.width = "500px"
     newiframe.height = "350px"
     newiframe.title = "Forwarded website"
@@ -181,8 +207,8 @@ function forwardPopUp(code) {
         event.preventDefault()
         const bounds = iframeContainer.getBoundingClientRect()
         iframeContainer.style.position = "fixed"
-        iframeContainer.style.left = \`\${bounds.left}px\`
-        iframeContainer.style.top = \`\${bounds.top}px\`
+        iframeContainer.style.left = bounds.left + "px"
+        iframeContainer.style.top = bounds.top + "px"
         iframeContainer.style.zIndex = String(++nextIframeZIndex)
         dragState = {
             pointerX: event.clientX,
@@ -194,8 +220,8 @@ function forwardPopUp(code) {
     })
     dragHandle.addEventListener("pointermove", (event) => {
         if (!dragState) return
-        iframeContainer.style.left = \`\${dragState.left + event.clientX - dragState.pointerX}px\`
-        iframeContainer.style.top = \`\${dragState.top + event.clientY - dragState.pointerY}px\`
+        iframeContainer.style.left = (dragState.left + event.clientX - dragState.pointerX) + "px"
+        iframeContainer.style.top = (dragState.top + event.clientY - dragState.pointerY) + "px"
     })
     dragHandle.addEventListener("pointerup", () => {
         dragState = null
@@ -225,8 +251,8 @@ function forwardPopUp(code) {
     })
     resizeHandle.addEventListener("pointermove", (event) => {
         if (!resizeState) return
-        iframeContainer.style.width = \`\${Math.max(240, resizeState.width + event.clientX - resizeState.pointerX)}px\`
-        iframeContainer.style.height = \`\${Math.max(180, resizeState.height + event.clientY - resizeState.pointerY)}px\`
+        iframeContainer.style.width = Math.max(240, resizeState.width + event.clientX - resizeState.pointerX) + "px"
+        iframeContainer.style.height = Math.max(180, resizeState.height + event.clientY - resizeState.pointerY) + "px"
     })
     resizeHandle.addEventListener("pointerup", () => {
         resizeState = null
@@ -235,15 +261,47 @@ function forwardPopUp(code) {
         resizeState = null
     })
 
-    const closeButton = document.createElement("button")
-    closeButton.type = "button"
-    closeButton.className = "iframe-close"
-    closeButton.textContent = "×"
-    closeButton.setAttribute("aria-label", "Close forwarded website")
-    closeButton.addEventListener("click", () => iframeContainer.remove())
+const largescreen = document.createElement("button")
+largescreen.type = "button"
+largescreen.className = "iframe-maximize"
+largescreen.textContent = "□"
+largescreen.setAttribute("aria-label", "Maximize window")
 
-    iframeContainer.append(newiframe, dragHandle, closeButton, resizeHandle)
-    document.body.appendChild(iframeContainer)
+let maximizedState = null
+largescreen.addEventListener("click", () => {
+    if (!maximizedState) {
+        maximizedState = {
+            width: iframeContainer.style.width || getComputedStyle(iframeContainer).width,
+            height: iframeContainer.style.height || getComputedStyle(iframeContainer).height,
+            left: iframeContainer.style.left || getComputedStyle(iframeContainer).left,
+            top: iframeContainer.style.top || getComputedStyle(iframeContainer).top,
+        }
+
+        const maxWidth = Math.min(window.innerWidth * 0.9, 1200)
+        const maxHeight = Math.min(window.innerHeight * 0.9, 800)
+
+        iframeContainer.style.width = maxWidth + "px"
+        iframeContainer.style.height = maxHeight + "px"
+        iframeContainer.style.left = ((window.innerWidth - maxWidth) / 2) + "px"
+        iframeContainer.style.top = ((window.innerHeight - maxHeight) / 2) + "px"
+    } else {
+        iframeContainer.style.width = maximizedState.width
+        iframeContainer.style.height = maximizedState.height
+        iframeContainer.style.left = maximizedState.left
+        iframeContainer.style.top = maximizedState.top
+        maximizedState = null
+    }
+})
+
+const closeButton = document.createElement("button")
+closeButton.type = "button"
+closeButton.className = "iframe-close"
+closeButton.textContent = "×"
+closeButton.setAttribute("aria-label", "Close forwarded website")
+closeButton.addEventListener("click", () => iframeContainer.remove())
+
+iframeContainer.append(newiframe, dragHandle, largescreen, closeButton, resizeHandle)
+document.body.appendChild(iframeContainer)
 }
 function clickhandlenonstatic() {
     forwardPopUp(1)
@@ -251,10 +309,14 @@ function clickhandlenonstatic() {
 function clickhandlestatic() {
     forwardPopUp(0)
 }
+function showInfo() {
+   forwardPopUp(2)
+}
 document.getElementById("forward").addEventListener("click", clickhandlenonstatic);
+document.getElementById("about").addEventListener("click", showInfo)
 document.getElementById("static").addEventListener("click", clickhandlestatic);<\/script>
 </body>
-</html>`;
+</html>`
 
         function launchDirect() {
             document.open();
@@ -271,7 +333,6 @@ document.getElementById("static").addEventListener("click", clickhandlestatic);<
             } else {
                 alert("Popup blocked! Please allow popups for this dashboard.");
             }
-            //too lazy to make them consistent
         }
 
         function launchBlob() {
