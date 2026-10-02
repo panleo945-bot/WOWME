@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Website Launcher</title>
+</head>
+<body>
+
+    <div class="container">
+        <h2>Website Launcher</h2>
+        <p>Choose environment:</p>
+        
+        <div class="btn-container">
+            <button class="btn-blank" onclick="launchAboutBlank()">Launch in about:blank</button>
+            <button class="btn-blob" onclick="launchBlob()">Launch in Blob URL</button>
+            <button class="btn-normal" onclick="launchDirect()">Launch through this page</button>
+        </div>
+    </div>
+
+    <script>
+        const predefinedHTML = `<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Site</title>
+    <style>body {
+	min-height: 100vh;
+	margin: 0;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 16px;
+	background: linear-gradient(180deg, #0a2a6b 0%, #02123b 100%) fixed;
+}
+button {
+    background-color: #061022;
+    color: cyan;
+    height: 35px;
+    width: 85px;
+    font-size: 12px;
+    border-color: cyan;
+
+}
+
+.control-panel {
+    position: absolute;
+    top: 4%;
+	width: 190px;
+	height: 50px;
+	display: flex;
+	justify-content: space-evenly;
+	align-items: center;
+	background-color: rgb(10, 119, 228);
+}
+
+.iframe-container {
+	position: relative;
+	width: 500px;
+	height: 350px;
+	overflow: hidden;
+}
+
+.iframe-container iframe {
+	display: block;
+	width: 100%;
+	height: 100%;
+	border: 0;
+}
+
+.iframe-drag-handle {
+	position: absolute;
+	top: 0;
+	left: 0;
+	z-index: 1;
+	width: calc(100% - 30px);
+	height: 32px;
+	box-sizing: border-box;
+	display: flex;
+	align-items: center;
+	padding: 0 12px;
+	border: 0;
+	border-bottom: 1px solid rgba(255, 255, 255, 0.14);
+	background: rgba(6, 16, 34, 0.88);
+	color: rgba(245, 248, 255, 0.92);
+	font-size: 12px;
+	font-weight: 600;
+	text-align: left;
+	cursor: grab;
+	touch-action: none;
+}
+
+.iframe-drag-handle::before {
+	width: 14px;
+	height: 8px;
+	margin-right: 8px;
+	background: radial-gradient(circle, #aab7c9 1.3px, transparent 1.5px) 0 0 / 6px 6px;
+	content: "";
+}
+
+.iframe-drag-handle:active {
+	cursor: grabbing;
+}
+
+.iframe-close {
+	position: absolute;
+	top: 4px;
+	right: 4px;
+	z-index: 2;
+	width: 22px;
+	height: 22px;
+	padding: 0;
+	border: 0;
+	border-radius: 50%;
+	background: #050396;
+	color: rgb(255, 4, 4);
+	font-size: 18px;
+	line-height: 1;
+	cursor: pointer;
+}
+
+.iframe-close:hover {
+	background: #f0645d;
+}
+
+.iframe-close:focus-visible,
+.iframe-drag-handle:focus-visible {
+	outline: 2px solid white;
+	outline-offset: 2px;
+}
+
+.iframe-resize-handle {
+	position: absolute;
+	right: 0;
+	bottom: 0;
+	z-index: 3;
+	width: 22px;
+	height: 22px;
+	padding: 0;
+	border: 0;
+	background: linear-gradient(135deg, transparent 48%, white 50% 56%, transparent 58% 67%, white 69% 75%, transparent 77%);
+	cursor: nwse-resize;
+	touch-action: none;
+}</style>
+</head>
+<body>
+    <div class="control-panel">
+        <button id="forward">Use proxy</button>
+        <button id="static">Games / Static</button>
+    </div>
+<script>
+
+let forwardingwebsite = "https://example.com/"
+let staticsite = \`<head><style>body {background-color: white}</style></head><body><h1>Add static site</h1> <script>let jsison = document.createElement("h2"); jsison.textContent = "JS is on"; document.body.append(jsison)<\\/script></body> \`
+let nextIframeZIndex = 1
+//Make sure website allows embeds
+function forwardPopUp(code) {
+    const iframeContainer = document.createElement("div")
+    iframeContainer.className = "iframe-container"
+
+    const newiframe = document.createElement("iframe")
+    if (code == 1) {
+    newiframe.src = forwardingwebsite
+} else if (code == 0) {
+    newiframe.srcdoc = staticsite
+}
+    newiframe.width = "500px"
+    newiframe.height = "350px"
+    newiframe.title = "Forwarded website"
+
+    const dragHandle = document.createElement("button")
+    dragHandle.type = "button"
+    dragHandle.className = "iframe-drag-handle"
+    dragHandle.textContent = "Window"
+    dragHandle.setAttribute("aria-label", "Drag window")
+    dragHandle.title = "Drag to move"
+
+    let dragState
+    dragHandle.addEventListener("pointerdown", (event) => {
+        event.preventDefault()
+        const bounds = iframeContainer.getBoundingClientRect()
+        iframeContainer.style.position = "fixed"
+        iframeContainer.style.left = \`\${bounds.left}px\`
+        iframeContainer.style.top = \`\${bounds.top}px\`
+        iframeContainer.style.zIndex = String(++nextIframeZIndex)
+        dragState = {
+            pointerX: event.clientX,
+            pointerY: event.clientY,
+            left: bounds.left,
+            top: bounds.top,
+        }
+        dragHandle.setPointerCapture(event.pointerId)
+    })
+    dragHandle.addEventListener("pointermove", (event) => {
+        if (!dragState) return
+        iframeContainer.style.left = \`\${dragState.left + event.clientX - dragState.pointerX}px\`
+        iframeContainer.style.top = \`\${dragState.top + event.clientY - dragState.pointerY}px\`
+    })
+    dragHandle.addEventListener("pointerup", () => {
+        dragState = null
+    })
+    dragHandle.addEventListener("pointercancel", () => {
+        dragState = null
+    })
+
+    const resizeHandle = document.createElement("button")
+    resizeHandle.type = "button"
+    resizeHandle.className = "iframe-resize-handle"
+    resizeHandle.setAttribute("aria-label", "Resize window")
+    resizeHandle.title = "Drag to resize"
+
+    let resizeState
+    resizeHandle.addEventListener("pointerdown", (event) => {
+        event.preventDefault()
+        const bounds = iframeContainer.getBoundingClientRect()
+        iframeContainer.style.zIndex = String(++nextIframeZIndex)
+        resizeState = {
+            pointerX: event.clientX,
+            pointerY: event.clientY,
+            width: bounds.width,
+            height: bounds.height,
+        }
+        resizeHandle.setPointerCapture(event.pointerId)
+    })
+    resizeHandle.addEventListener("pointermove", (event) => {
+        if (!resizeState) return
+        iframeContainer.style.width = \`\${Math.max(240, resizeState.width + event.clientX - resizeState.pointerX)}px\`
+        iframeContainer.style.height = \`\${Math.max(180, resizeState.height + event.clientY - resizeState.pointerY)}px\`
+    })
+    resizeHandle.addEventListener("pointerup", () => {
+        resizeState = null
+    })
+    resizeHandle.addEventListener("pointercancel", () => {
+        resizeState = null
+    })
+
+    const closeButton = document.createElement("button")
+    closeButton.type = "button"
+    closeButton.className = "iframe-close"
+    closeButton.textContent = "×"
+    closeButton.setAttribute("aria-label", "Close forwarded website")
+    closeButton.addEventListener("click", () => iframeContainer.remove())
+
+    iframeContainer.append(newiframe, dragHandle, closeButton, resizeHandle)
+    document.body.appendChild(iframeContainer)
+}
+function clickhandlenonstatic() {
+    forwardPopUp(1)
+}
+function clickhandlestatic() {
+    forwardPopUp(0)
+}
+document.getElementById("forward").addEventListener("click", clickhandlenonstatic);
+document.getElementById("static").addEventListener("click", clickhandlestatic);<\/script>
+</body>
+</html>`;
+
+        function launchDirect() {
+            document.open();
+            document.write(predefinedHTML);
+            document.close();
+        }
+
+        function launchAboutBlank() {
+            const win = window.open('about:blank', '_blank');
+            if (win) {
+                win.document.open();
+                win.document.write(predefinedHTML);
+                win.document.close();
+            } else {
+                alert("Popup blocked! Please allow popups for this dashboard.");
+            }
+            //too lazy to make them consistent
+        }
+
+        function launchBlob() {
+            const blob = new Blob([predefinedHTML], { type: 'text/html' });
+            const blobUrl = URL.createObjectURL(blob);
+            const win = window.open(blobUrl, '_blank');
+            if (!win) {
+                alert("Popup blocked! Please allow popups for this dashboard.");
+            }
+        }
+    </script>
+
+</body>
+</html>
