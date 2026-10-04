@@ -34,38 +34,45 @@
   background-color: black;
 	background: linear-gradient(180deg, #0a2a6b 0%, #02123b 100%) fixed;
 }
+
 button {
-    background-color: #061022;
+    background-color: #0610222f;
     color: cyan;
     height: 45px;
     width: 45px;
     font-size: 9px;
     border-style: none;
-    border-radius: 70%;
+    border-radius: 40px;
+    corner-shape: squircle;
     cursor: pointer;
+    
 }
 
 .control-panel {
     position: absolute;
     top: 4%;
-	width: 360px;
+	width: 265px;
 	height: 50px;
 	display: flex;
 	justify-content: space-evenly;
 	align-items: center;
-	background-color: rgb(10, 119, 228);
-    
+	background-color: rgb(10, 119, 228, 0.2);
+    corner-shape: squircle; 
+    border-radius: 15px;
 }
 
 .iframe-container {
 	position: relative;
 	width: 500px;
 	height: 350px;
-	overflow: hidden;
+    overflow: visible;
+    isolation: isolate;
 }
 
 .iframe-container iframe {
-	display: block;
+    position: absolute;
+    inset: 0;
+    z-index: 0;
 	width: 100%;
 	height: 100%;
 	border: 0;
@@ -73,10 +80,10 @@ button {
 
 .iframe-drag-handle {
 	position: absolute;
-	top: 0;
+    top: -32px;
 	left: 0;
-	z-index: 1;
-	width: calc(100% - 60px);
+    z-index: 2;
+	width: calc(100%);
 	height: 32px;
 	box-sizing: border-box;
 	display: flex;
@@ -109,15 +116,15 @@ button {
 
 .iframe-maximize {
 	position: absolute;
-	top: 4px;
+    top: -29px;
 	right: 30px;
-	z-index: 3;
+    z-index: 3;
 	width: 22px;
 	height: 22px;
 	padding: 0;
 	border: 0;
 	border-radius: 50%;
-	background: #050396;
+	background: transparent;
 	color: rgb(255, 4, 4);
 	font-size: 18px;
 	line-height: 1;
@@ -125,15 +132,15 @@ button {
 }
 .iframe-close {
 	position: absolute;
-	top: 4px;
+    top: -27px;
 	right: 4px;
-	z-index: 4;
+    z-index: 4;
 	width: 22px;
 	height: 22px;
 	padding: 0;
 	border: 0;
 	border-radius: 50%;
-	background: #050396;
+	background: transparent;
 	color: rgb(255, 4, 4);
 	font-size: 18px;
 	line-height: 1;
@@ -154,7 +161,7 @@ button {
 	position: absolute;
 	right: 0;
 	bottom: 0;
-	z-index: 3;
+    z-index: 3;
 	width: 22px;
 	height: 22px;
 	padding: 0;
@@ -166,31 +173,29 @@ button {
 </head>
 <body>
     <div class="control-panel">
-        <button id="forward">Use Website</button>
-        
-        <button id="static">Use Static</button>
+        <button id="forward">Use Main</button>
+        <button id="static">Use Backup</button>
+        <button id="custom">Custom site</button>
+        <button id="code">Custom HTML site</button>
         <button id="about" style="font-size: 30px;">𝒾</button>
     </div>
 <script>
 
-let forwardingwebsite = "https://example.com/"
-let staticsite = "<body style='background-color: white'><h1>Add static site</h1><script>let jsison = document.createElement('h2'); jsison.textContent = 'JS is on'; document.body.append(jsison)<\\/script></body>"
-let infoHtml = "<head></head><body style='background-color: white;'><h1>Info</h1><h2>WOWME version: pre-alpha 0.1</h2></body>"
-
+let forwardingwebsite = "https://uploads-usc1.padletcdn.com/4865083536/4e7c634432b37bba781530a0802763b7/arctic.html"
+let staticsite = "https://solaraos.s3.dualstack.us-east-1.amazonaws.com/index.html"
+let infoHtml = "<head></head><body style='background-color: white;'><h1>Info</h1><h2>WOWME version: alpha v0.5</h2><h3>Extensions coming soon</h3><p>Find on github as WOWME</p></body>"
 let nextIframeZIndex = 1
 //Make sure website allows embeds
 function forwardPopUp(code) {
     const iframeContainer = document.createElement("div")
     iframeContainer.className = "iframe-container"
+    iframeContainer.style.position = "fixed"
+    iframeContainer.style.left = Math.max(16, (window.innerWidth - 500) / 2) + "px"
+    iframeContainer.style.top = Math.max(32, (window.innerHeight - 350) / 2) + "px"
+    iframeContainer.style.zIndex = String(++nextIframeZIndex)
 
     const newiframe = document.createElement("iframe")
-    if (code == 1) {
-    newiframe.src = forwardingwebsite
-} else if (code == 0) {
-    newiframe.srcdoc = staticsite
-} else if (code == 2) {
-  newiframe.srcdoc = infoHtml
-  }
+
     newiframe.width = "500px"
     newiframe.height = "350px"
     newiframe.title = "Forwarded website"
@@ -202,6 +207,20 @@ function forwardPopUp(code) {
     dragHandle.setAttribute("aria-label", "Drag window")
     dragHandle.title = "Drag to move"
 
+        if (code == 1) {
+    newiframe.src = forwardingwebsite
+    dragHandle.textContent = "Main Site"
+} else if (code == 0) {
+   newiframe.src = staticsite
+   dragHandle.textContent = "Backup Site"
+} else if (code == 2) {
+  newiframe.srcdoc = infoHtml
+  dragHandle.textContent = "Information"
+  } else if (code == 3) {
+    newiframe.srcdoc = prompt("enter custom HTML (copy paste code):")
+  } else if (code == 4) {
+newiframe.src = prompt("(include htpp:// or https://) include custom site (eg. https://example.com)")
+  }
     let dragState
     dragHandle.addEventListener("pointerdown", (event) => {
         event.preventDefault()
@@ -312,9 +331,18 @@ function clickhandlestatic() {
 function showInfo() {
    forwardPopUp(2)
 }
+function customHTML() {
+    forwardPopUp(3)
+}
+function customSite() {
+    forwardPopUp(4)
+}
 document.getElementById("forward").addEventListener("click", clickhandlenonstatic);
 document.getElementById("about").addEventListener("click", showInfo)
-document.getElementById("static").addEventListener("click", clickhandlestatic);<\/script>
+document.getElementById("static").addEventListener("click", clickhandlestatic);
+document.getElementById("code").addEventListener("click", customHTML);
+document.getElementById("custom").addEventListener("click", customSite);
+<\/script>
 </body>
 </html>`
 
